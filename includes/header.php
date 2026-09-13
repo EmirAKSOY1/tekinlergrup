@@ -43,8 +43,12 @@ $csrf_token   = generate_csrf();
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto:wght@400;500&display=swap">
     </noscript>
 
-    <!-- Ana CSS -->
-    <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css') ?>">
+    <!-- Ana CSS (Minified & Optimized) -->
+    <?php
+    $css_file = file_exists(__DIR__ . '/../assets/css/style.min.css') ? '/assets/css/style.min.css' : '/assets/css/style.css';
+    $css_path = __DIR__ . '/..' . $css_file;
+    ?>
+    <link rel="stylesheet" href="<?= $css_file ?>?v=<?= filemtime($css_path) ?>">
 
     <!-- Schema.org JSON-LD -->
     <?php if (!empty($page_meta['schema'])): ?>

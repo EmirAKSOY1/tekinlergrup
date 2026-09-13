@@ -1,0 +1,25 @@
+# Tekinler Grup Vinç — robots.txt
+# https://www.tekinlergrupvinc.com/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /includes/
+Disallow: /ajax/
+Disallow: /vendor/
+Disallow: /.htaccess
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /*.php$
+
+# Ana sayfaları indeksle
+Allow: /index.php
+Allow: /hakkimizda.php
+Allow: /hizmetlerimiz.php
+Allow: /iletisim.php
+Allow: /referanslar.php
+Allow: /galeri.php
+Allow: /blog.php
+Allow: /hizmetler/
+
+# Sitemap
+Sitemap: https://www.tekinlergrupvinc.com/sitemap.xml

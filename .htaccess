@@ -1,0 +1,142 @@
+# Apache .htaccess — Tekinler Grup Vinç
+# URL Rewriting, Güvenlik Başlıkları, 301 Redirects
+
+Options -Indexes
+Options -MultiViews
+
+# ============================================================
+# 1. MOD_REWRITE — Clean URL Sistemi
+# ============================================================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # HTTPS Yönlendirme (SSL sonrası aktive edin)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # www yönlendirme (tercihle)
+    # RewriteCond %{HTTP_HOST} !^www\. [NC]
+    # RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L]
+
+    # /index.php -> / (canonical)
+    RewriteCond %{THE_REQUEST} /index\.php [NC]
+    RewriteRule ^index\.php$ / [R=301,L]
+
+    # Kule Vinç sayfasını hizmetlerimiz'e yönlendir (301)
+    RewriteRule ^hizmetler/kule-vinc/?$ /hizmetlerimiz [R=301,L]
+
+    # Blog yazısı URL'leri: /blog/SLUG -> blog-post.php?slug=SLUG
+    RewriteRule ^blog/([a-z0-9\-]+)/?$ blog-post.php?slug=$1 [L,QSA]
+
+    # PHP uzantısını gizle: /sayfa.php -> /sayfa
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+)$ $1.php [L,QSA]
+
+    # Hizmet sayfaları: /hizmetler/vinc-kiralama -> /hizmetler/vinc-kiralama.php
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^hizmetler/(.+)$ hizmetler/$1.php [L,QSA]
+
+    # Hata sayfaları (End-User Güvenliği)
+    ErrorDocument 404 /404.php
+    ErrorDocument 500 /500.php
+</IfModule>
+
+# ============================================================
+# PRODUCTION HATA YÖNETİMİ (Kullanıcıya PHP Hatası Gösterme)
+# ============================================================
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag display_startup_errors Off
+    php_flag log_errors On
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag display_startup_errors Off
+    php_flag log_errors On
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag display_errors Off
+    php_flag display_startup_errors Off
+    php_flag log_errors On
+</IfModule>
+
+# ============================================================
+# 2. GÜVENLİK BAŞLIKLARI
+# ============================================================
+<IfModule mod_headers.c>
+    # XSS Koruması
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Clickjacking Koruması
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Content Type Sniffing Koruması
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # HSTS (SSL aktif olduğunda)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Cache kontrolü (statik dosyalar)
+    <FilesMatch "\.(css|js|woff2|woff|ttf|eot|otf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|avif|svg|ico)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+
+    <FilesMatch "\.php$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+
+    # PHP dosyalarını koru
+    <FilesMatch "(config|functions|mail|seo)\.php$">
+        Header set X-Robots-Tag "noindex, nofollow"
+    </FilesMatch>
+</IfModule>
+
+# ============================================================
+# 3. SIKIŞTIRMA (Gzip)
+# ============================================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+    AddOutputFilterByType DEFLATE application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ============================================================
+# 4. HASSAS DOSYALARI KORU
+# ============================================================
+<FilesMatch "(\.env|composer\.json|composer\.lock|\.git|\.gitignore)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# includes/ klasörüne direkt erişimi engelle
+<IfModule mod_rewrite.c>
+    RewriteRule ^includes/ - [F,L]
+    RewriteRule ^ajax/contact\.php$ - [L]
+</IfModule>
+
+# ============================================================
+# 5. CHARSET
+# ============================================================
+AddDefaultCharset UTF-8
+
+# ============================================================
+# 6. MIME TYPES (WebP, AVIF)
+# ============================================================
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+    AddType image/avif .avif
+    AddType font/woff2 .woff2
+</IfModule>

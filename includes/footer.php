@@ -141,8 +141,12 @@
     </div>
 </footer>
 
-<!-- ====== JAVASCRIPT ====== -->
-<script src="/assets/js/main.js" defer></script>
+<!-- ====== JAVASCRIPT (Minified) ====== -->
+<?php
+$js_file = file_exists(__DIR__ . '/../assets/js/main.min.js') ? '/assets/js/main.min.js' : '/assets/js/main.js';
+$js_path = __DIR__ . '/..' . $js_file;
+?>
+<script src="<?= $js_file ?>?v=<?= filemtime($js_path) ?>" defer></script>
 
 </body>
 </html>
